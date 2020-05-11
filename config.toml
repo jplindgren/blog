@@ -1,4 +1,5 @@
 title = "Jp Lindgren Tech blog"
+baseURL = "https://jplindgren.netlify.app"
 languageCode = "en-us"
 theme = "ananke"
 
