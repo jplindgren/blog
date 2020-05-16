@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     
-    <title>Chapter V: Quasimodo | Jp Lindgren Tech blog</title>
+    <title>Creating a NestJS application | Jp Lindgren Tech blog</title>
     <meta name="viewport" content="width=device-width,minimum-scale=1">
     <meta name="generator" content="Hugo 0.70.0" />
     
@@ -27,23 +27,23 @@
 
     
     
-    <meta property="og:title" content="Chapter V: Quasimodo" />
-<meta property="og:description" content="Quasimodo" />
+    <meta property="og:title" content="Creating a NestJS application" />
+<meta property="og:description" content="Creating a sample blog application with NestJS, Postgres and ElasticSearch" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://localhost:1313/post/chapter-5/" />
-<meta property="article:published_time" content="2017-04-13T11:15:58-04:00" />
-<meta property="article:modified_time" content="2017-04-13T11:15:58-04:00" />
-<meta itemprop="name" content="Chapter V: Quasimodo">
-<meta itemprop="description" content="Quasimodo">
-<meta itemprop="datePublished" content="2017-04-13T11:15:58-04:00" />
-<meta itemprop="dateModified" content="2017-04-13T11:15:58-04:00" />
-<meta itemprop="wordCount" content="701">
+<meta property="og:url" content="http://localhost:1313/post/creating-nestjs-application/" />
+<meta property="article:published_time" content="2020-05-14T10:58:08-04:00" />
+<meta property="article:modified_time" content="2020-05-14T10:58:08-04:00" />
+<meta itemprop="name" content="Creating a NestJS application">
+<meta itemprop="description" content="Creating a sample blog application with NestJS, Postgres and ElasticSearch">
+<meta itemprop="datePublished" content="2020-05-14T10:58:08-04:00" />
+<meta itemprop="dateModified" content="2020-05-14T10:58:08-04:00" />
+<meta itemprop="wordCount" content="664">
 
 
 
-<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="Chapter V: Quasimodo"/>
-<meta name="twitter:description" content="Quasimodo"/>
+<meta itemprop="keywords" content="Javascript,Nestjs,Elasticsearch," /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Creating a NestJS application"/>
+<meta name="twitter:description" content="Creating a sample blog application with NestJS, Postgres and ElasticSearch"/>
 
   </head>
 
@@ -53,8 +53,10 @@
    
   
 
-  <header>
-    <div class="bg-black">
+  
+  
+  <header class="cover bg-top" style="background-image: url('http://localhost:1313/images/nestjs-logo-small.svg');">
+    <div class="pb3-m pb6-l bg-black-60">
       <nav class="pv3 ph3 ph4-ns" role="navigation">
   <div class="flex-l justify-between items-center center">
     <a href="http://localhost:1313/" class="f3 fw2 hover-white no-underline white-90 dib">
@@ -123,6 +125,16 @@
   </div>
 </nav>
 
+      <div class="tc-l pv6 ph3 ph4-ns">
+        
+          <h1 class="f2 f1-l fw2 white-90 mb0 lh-title">Creating a NestJS application</h1>
+          
+            <h2 class="fw1 f5 f3-l white-80 measure-wide-l center lh-copy mt3 mb4">
+              Creating a sample blog application with NestJS, Postgres and ElasticSearch
+            </h2>
+          
+        
+      </div>
     </div>
   </header>
 
@@ -145,20 +157,20 @@
   <div id="sharing" class="mt3">
 
     
-    <a href="https://www.facebook.com/sharer.php?u=http://localhost:1313/post/chapter-5/" class="facebook no-underline" aria-label="share on Facebook">
+    <a href="https://www.facebook.com/sharer.php?u=http://localhost:1313/post/creating-nestjs-application/" class="facebook no-underline" aria-label="share on Facebook">
       <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
 
     </a>
 
     
     
-    <a href="https://twitter.com/share?url=http://localhost:1313/post/chapter-5/&amp;text=Chapter%20V:%20Quasimodo" class="twitter no-underline" aria-label="share on Twitter">
+    <a href="https://twitter.com/share?url=http://localhost:1313/post/creating-nestjs-application/&amp;text=Creating%20a%20NestJS%20application" class="twitter no-underline" aria-label="share on Twitter">
       <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
 
     </a>
 
     
-    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http://localhost:1313/post/chapter-5/&amp;title=Chapter%20V:%20Quasimodo" class="linkedin no-underline" aria-label="share on LinkedIn">
+    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=http://localhost:1313/post/creating-nestjs-application/&amp;title=Creating%20a%20NestJS%20application" class="linkedin no-underline" aria-label="share on LinkedIn">
       <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
 </svg>
@@ -166,20 +178,59 @@
     </a>
   </div>
 
-      <h1 class="f1 athelas mt3 mb1">Chapter V: Quasimodo</h1>
+      <h1 class="f1 athelas mt3 mb1">Creating a NestJS application</h1>
       
       
-      <time class="f6 mv4 dib tracked" datetime="2017-04-13T11:15:58-04:00">April 13, 2017</time>
+      <time class="f6 mv4 dib tracked" datetime="2020-05-14T10:58:08-04:00">May 14, 2020</time>
 
       
       
     </header>
-    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><p>In the twinkling of an eye, all was ready to execute Coppenole’s idea. Bourgeois, scholars and law clerks all set to work. The little chapel situated opposite the marble table was selected for the scene of the grinning match. A pane broken in the pretty rose window above the door, left free a circle of stone through which it was agreed that the competitors should thrust their heads. In order to reach it, it was only necessary to mount upon a couple of hogsheads, which had been produced from I know not where, and perched one upon the other, after a fashion. It was settled that each candidate, man or woman (for it was possible to choose a female pope), should, for the sake of leaving the impression of his grimace fresh and complete, cover his face and remain concealed in the chapel until the moment of his appearance. In less than an instant, the chapel was crowded with competitors, upon whom the door was then closed.</p>
-<p>Coppenole, from his post, ordered all, directed all, arranged all. During the uproar, the cardinal, no less abashed than Gringoire, had retired with all his suite, under the pretext of business and vespers, without the crowd which his arrival had so deeply stirred being in the least moved by his departure. Guillaume Rym was the only one who noticed his eminence’s discomfiture. The attention of the populace, like the sun, pursued its revolution; having set out from one end of the hall, and halted for a space in the middle, it had now reached the other end. The marble table, the brocaded gallery had each had their day; it was now the turn of the chapel of Louis XI. Henceforth, the field was open to all folly. There was no one there now, but the Flemings and the rabble.</p>
-<p>The grimaces began. The first face which appeared at the aperture, with eyelids turned up to the reds, a mouth open like a maw, and a brow wrinkled like our hussar boots of the Empire, evoked such an inextinguishable peal of laughter that Homer would have taken all these louts for gods. Nevertheless, the grand hall was anything but Olympus, and Gringoire’s poor Jupiter knew it better than any one else. A second and third grimace followed, then another and another; and the laughter and transports of delight went on increasing. There was in this spectacle, a peculiar power of intoxication and fascination, of which it would be difficult to convey to the reader of our day and our salons any idea.</p>
-<p>Let the reader picture to himself a series of visages presenting successively all geometrical forms, from the triangle to the trapezium, from the cone to the polyhedron; all human expressions, from wrath to lewdness; all ages, from the wrinkles of the new-born babe to the wrinkles of the aged and dying; all religious phantasmagories, from Faun to Beelzebub; all animal profiles, from the maw to the beak, from the jowl to the muzzle. Let the reader imagine all these grotesque figures of the Pont Neuf, those nightmares petrified beneath the hand of Germain Pilon, assuming life and breath, and coming in turn to stare you in the face with burning eyes; all the masks of the Carnival of Venice passing in succession before your glass,—in a word, a human kaleidoscope.</p>
-<p>The orgy grew more and more Flemish. Teniers could have given but a very imperfect idea of it. Let the reader picture to himself in bacchanal form, Salvator Rosa’s battle. There were no longer either scholars or ambassadors or bourgeois or men or women; there was no longer any Clopin Trouillefou, nor Gilles Lecornu, nor Marie Quatrelivres, nor Robin Poussepain. All was universal license. The grand hall was no longer anything but a vast furnace of effrontry and joviality, where every mouth was a cry, every individual a posture; everything shouted and howled. The strange visages which came, in turn, to gnash their teeth in the rose window, were like so many brands cast into the brazier; and from the whole of this effervescing crowd, there escaped, as from a furnace, a sharp, piercing, stinging noise, hissing like the wings of a gnat.</p>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><h1 id="creating-a-complete-nestjs-application">Creating a &ldquo;complete&rdquo; NestJS application</h1>
+<ul>
+<li><a href="#what-is-nestjs">What is NestJS</a></li>
+<li><a href="#creating-the-project">Creating the Project</a></li>
+<li>Adding controllers</li>
+<li>Adding services</li>
+<li>Http test</li>
+<li>Add TypeORM</li>
+<li>Configuration</li>
+<li>Add a post subscriber and index content with elastic search.</li>
+<li>Docker and Docker compose</li>
+</ul>
+<p>During this pandemic with the free time, I and some friends wanted to do a side project to improve our skills and know new technologies and frameworks. I´ll focus on what would be this project, but after a few talks we decided to do it, using react native and NodeJs in the backend.
+It turns out that we did not take this side project out of paper for several reasons, conciliate schedules, different objectives, and lack of agreement as to the direction in which the project should go, among other things. During our discussions one of my friends presented this framework called NestJS as an option to use in the backend. Although we halt the project, I decided to give it a shot to this framework, and started a little web application by my own just to learn it.</p>
+<p>This article describes in detail the steps I took in creating a &ldquo;fake&rdquo; blog api. I start by explaining what NestJS is, how you can set it up, add controllers, persist data and dockerize it. Be warned that this is just a SAMPLE PROJECT, and I tried to do some OVERENGINEER to discover how things works in NestJS (using ElasticSearch as an indexing tool for example).</p>
+<h1 id="what-is-nestjs">What is NestJS</h1>
+<p>As you can see <a href="https://docs.nestjs.com/">here</a>, the documentaton claims NestJS to be a framework for building efficient, scalable NodeJs applications. It uses progressive JavaScript and combines OOP (Object Oriented Programming), FP (Functional Programming), and FRP (Functional Reactive Programming). Putting the <del>fancy words</del> buzzwords aside, it creates an abstraction on top of <a href="https://expressjs.com/">express</a> (or <a href="https://www.fastify.io/">fastify</a>) providing an opinionated application <strong>achitecture</strong>.  I kind of like optionated frameworks, altough you can customize things, and do it your way, they kind of strongly guide you to use certain tools and code using their style as you can see looking into their documentation. Because of that, create something from scratch is super fast and you can jump in a new projects without spend much time thinking how you are going to organize things, &ldquo;it is not so easy&rdquo; to break the rules and create messy code using it. A nice think to have specially for newcomers to the framework. Also they use typescript which is very positive to me (I confess that I had preconception, but after use it for sometime, I fell in love with it) and seems to have a decent CLI.
+One thing that can be a positive point for some, is that it looks a lot like <a href="https://angularjs.org/">Angular.js</a>. As Angular is not my background, was indifferent to me, but I think that should be very straightforward for angular developers to jump into NestJS.</p>
+<h1 id="creating-the-project">Creating the project</h1>
+<p>Well, I decided to create a <del>complex and inovative</del> old but gold sample project! An API for a blog, where we will be able to retrieve, list, create, update and publish posts! Exciting no!? =]
+Jokes a part, I think we can use a lot of tools creating a sample project like this, and to be honest, it was the first idea that came to my mind to create an article.
+I am using Windows, Windows Terminal and Node v14.2.0.</p>
+<p><strong>Lets install the CLI (Command-line interface) package and scaffold a new project.</strong></p>
+<pre><code>PS D:\projects&gt; npm i -g @nestjs/cli
+PS D:\projects&gt; nest new bloggering
+PS D:\projects\bloggering&gt; cd bloggering
+</code></pre>
+<p>We just installed the CLI globally and use it to scaffold our new project. The CLI already create a folder for us with the basic project structure. The entrypoint of the application is the <em><strong>main.ts</strong></em> where we create our application and define the port it will listen.
+We can run the application now to check it.</p>
+<pre><code>PS D:\projects\bloggering&gt; npm run start
+</code></pre>
+<p>You can use fiddler, postman, curl or even the browser and navigate to http://localhost:3000 to see a &ldquo;hello world* message.</p>
 <ul class="pa0">
+  
+   <li class="list">
+     <a href="/tags/javascript" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Javascript</a>
+   </li>
+  
+   <li class="list">
+     <a href="/tags/nestjs" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Nestjs</a>
+   </li>
+  
+   <li class="list">
+     <a href="/tags/elasticsearch" class="link f5 grow no-underline br-pill ba ph3 pv2 mb2 dib black sans-serif">Elasticsearch</a>
+   </li>
   
 </ul>
 <div class="mt6 instapaper_ignoref">

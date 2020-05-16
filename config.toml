@@ -33,3 +33,7 @@ enableRobotsTXT = true
   featured_image = "/images/gohugo-default-sample-hero-image.jpg"
   recent_posts_number = 2
   custom_css = ["css/custom-style.css"]
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"

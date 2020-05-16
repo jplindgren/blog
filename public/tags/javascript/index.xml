@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>javascript on Jp Lindgren Tech blog</title>
+    <link>http://localhost:1313/tags/javascript/</link>
+    <description>Recent content in javascript on Jp Lindgren Tech blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 14 May 2020 10:58:08 -0400</lastBuildDate>
+    
+	<atom:link href="http://localhost:1313/tags/javascript/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Creating a NestJS application</title>
+      <link>http://localhost:1313/post/creating-nestjs-application/</link>
+      <pubDate>Thu, 14 May 2020 10:58:08 -0400</pubDate>
+      
+      <guid>http://localhost:1313/post/creating-nestjs-application/</guid>
+      <description>Creating a &amp;ldquo;complete&amp;rdquo; NestJS application  What is NestJS Creating the Project Adding controllers Adding services Http test Add TypeORM Configuration Add a post subscriber and index content with elastic search. Docker and Docker compose  During this pandemic with the free time, I and some friends wanted to do a side project to improve our skills and know new technologies and frameworks. I´ll focus on what would be this project, but after a few talks we decided to do it, using react native and NodeJs in the backend.</description>
+    </item>
+    
+  </channel>
+</rss>
