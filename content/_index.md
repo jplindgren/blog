@@ -1,6 +1,6 @@
 ---
-title: "Ananke: a Hugo Theme"
+title: "JP Lindgren "
 featured_image: '/images/gohugo-default-sample-hero-image.jpg'
-description: "The last theme you'll ever need. Maybe."
+description: ""
 ---
-Welcome to my blog with some of my work in progress. I've been working on this book idea. You can read some of the chapters below.
+Welcome to my blog with some of my work in progress. This time I´ll be providing english content.

@@ -1,0 +1,18 @@
+title Sequence of our auth process
+
+participant User
+participant Client
+participant Bloggering
+participant Google Auth Server
+
+User->Client:
+Client->Bloggering:GET http://localhost:3000/auth/google
+
+Bloggering->Google Auth Server:GET https://accounts.google.com/signin/oauth
+User->Google Auth Server:Login Consent
+Bloggering<-Google Auth Server:GET http://localhost:3000/auth/google/callback
+Bloggering->Bloggering:register / login logic => create jwt token
+Client<-Bloggering:jwt authorization token
+Client->Bloggering:POST http://localhost:3000/api/posts\nBearer: jwt_token
+Bloggering->Bloggering:authorize
+Client<-Bloggering:201 Created

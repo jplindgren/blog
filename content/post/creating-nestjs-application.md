@@ -1,5 +1,5 @@
 ---
-date: 2020-05-14T10:58:08-04:00
+date: 2020-04-10T10:58:08-04:00
 description: "Creating a sample blog application with NestJS, Postgres and ElasticSearch"
 featured_image: "/images/nestjs-logo-small.svg"
 tags: [ "Javascript", "Nestjs", "Elasticsearch"]
@@ -10,8 +10,8 @@ title: "Creating a NestJS application"
 - [What is NestJS](#what-is-nestjs)
 - [Creating a Project](#creating-a-project)
 - [Adding controllers](#add-controllers)
-- Adding services
-- Adding Google Auth
+- [Adding services](#add-services)
+- [Adding Google Auth](#add-google-auth)
 - Http test
 - Add TypeORM
 - Configuration
@@ -69,17 +69,17 @@ After that Inside our new posts.controller.ts we´ll create a couple of endpoint
 
 **bloggering/src/posts/post.entity.ts**
 
-		export  class  Post {
-			constructor(author: string, title: string, content: string) {
-				this.author = author;
-				this.title = title;
-				this.content = content;
-			}
-			id: number;
-			author: string;
-			title: string;
-			content: string;
+	export  class  Post {
+		constructor(author: string, title: string, content: string) {
+			this.author = author;
+			this.title = title;
+			this.content = content;
 		}
+		id: number;
+		author: string;
+		title: string;
+		content: string;
+	}
 
 **bloggering/src/posts/posts.controller.ts**
 
@@ -248,9 +248,263 @@ Add a @IsNotEmpty() decorator to our post content and title.
 	@IsNotEmpty()
 	content: string;
 
-Lets try to create an post with an empty title and content now. Look how we receive a HttpStatus of 400 (Bad Request error) with a detailed information of the error.
+Try to create an post with an empty title and content now and see how we receive a HttpStatus of 400 (Bad Request error) with a detailed information of the error.
 ![NestJs scaffold structure](/images/create-nestjs-app/06-validation-post-create.png)
 
+## Add Google Auth
+By now, we are using a hardcoded author when creating a new post. In this section lets add a **User** entity to allow a person to authenticate and use our app. Also we are going to add [Guards](https://docs.nestjs.com/guards) to some of our endpoints. A Guard is a decorator class that has the responsability to define if and decorated endpoint will handle or not the request based on certain conditions.
+To acomplish that, we will use a popular and recommended by NestJs library called **passport**.  This library allow you to create "strategies" to do differente types of authentication. I will bypass the local authentication using username/password because there is a pretty straighfoward tutorial in the NestJs documentation that you can check [here](https://docs.nestjs.com/techniques/authentication). Instead, we will use OAuth2 to authenticate using a google account. I did not try, but probably you can use the same idea to implement other providers like facebook, microsoft, etc.
+This is an overview of how our auth flow will look like.
+![NestJs scaffold structure](/images/create-nestjs-app/07-oauth2-google-sequence.png)
+We are not implement our client in this series, but would be some frontend application consuming our api.
 
-##Apenas para lembrar
-Ao usar o elastic search no docker compose, optamos por discovery.type=single-node para efeito de desenvolvimento. Ao acessar o elasticsearch ter noção da diferença entre acessar o localhost:9200 da máquina local e acessar via rede por outro container. Nesse caso usar o nome do container, ex: es01:9200
+ -  a client (in our case for test purposes, the browser or some api test tool like insomnia or postman) calling the /api/auth/google endpoint which will redirect to the Google login page.
+ - ther user give consent to login and google calls a callback endpoint in our application with the user data.
+ - our blogguering api will do some logic to login or create the user if needed and create an JWT auth token that will be returned to the client.
+ - the client will call our protected apis passing the jwt token in the authorization header in each subsequent request.
+
+First lets install the some dependencies.
+
+	PS C:\gems\blog-projects\bloggering> npm install @nestjs/passport --save
+	PS C:\gems\blog-projects\bloggering> npm install passport --save
+	PS C:\gems\blog-projects\bloggering> npm install passport-google-oauth20 --save
+
+Create an `auth module`, an `auth controller` and an `auth service`.
+
+    PS D:\projects\bloggering> nest generate mo auth
+    PS D:\projects\bloggering> nest generate co auth
+	PS D:\projects\bloggering> nest generate service auth
+
+After that, lets configure our application api in google to get our credentials. Go to [enter link description here](https://console.developers.google.com) and register the bloggering application.
+Create a new project, select it and enable the Google+ API by clicking on 'enable APIs and services' and searching for the Google+ API. Then go to 'credentials' and select the 'OAuth client ID' option when trying to create credentials.
+
+Choose 'Web application' as application type and continue. Add  `http://localhost:3000`  under the Authorized Javascript origins and add  `[http://localhost:3000/api/auth/google/callback](http://localhost:3000/api/auth/google/callback)`  under Authorized redirect URIs. Google will redirect the user information to our callback URI when a user successfully logs in. Save and replace the  `clientID`  and  `clientSecret`because we will need for the google strategy passport.
+![NestJs scaffold structure](/images/create-nestjs-app/08-oauth2-google-console-config.png)
+
+Ok, finally we've set all dependencies, configurations and we are ready to code! We are going to start creating a folder inside the `/auth` folder called `strategies`. Inside that folder create an `google.passport.strategy.ts` file. In future we can implement other strategies here as well, like local strategy.
+
+**bloggering/src/auth/strategies/google.passport.strategy.ts**
+
+    import { Injectable } from  "@nestjs/common";
+    import { PassportStrategy } from  "@nestjs/passport";
+    import { Strategy } from  "passport-google-oauth20";
+
+    @Injectable()
+    export  class  GooglePassaportStrategy  extends  PassportStrategy(Strategy, 'google')
+    {
+	    constructor() {
+		    super({
+			    clientID:'ClIENT_ID', // <- Replace this with your client id
+			    clientSecret: 'CLIENT_SECRET', // <- Replace this with your client secret
+			    callbackURL: 'http://localhost:3000/api/auth/google/callback',
+			    passReqToCallback:  true,
+			    scope: ['profile', 'email']
+		    })
+	    }
+
+	    async  validate(request: any, accessToken: string, refreshToken: string, profile, done: Function) {
+		    try {
+			    const  jwt = "placeholderJWT";
+			    const  user = { jwt };
+			    done(null, user);
+		    }
+		    catch (err) {
+			    done(err, false);
+		    }
+	    }
+    }
+   This class extends `PassportStrategy`calling its constructor with our credentials from google. Copy them to the clientId and clientSecret parameters of `super()`. REMEMBER to not commit this credentials to your source control. Never put them on your code! Later we´ll remove and store them in environments variables. Also we passed our callback url, and the scope of the information we need retrieve from google.
+	 Our `validate` function will handle a sucessfull login on google, when it calls our callback endpoint. Later we are apply some registration logic and create a JWT token, but by now just return a hardcode string serve us for test purposes. You can put a `console.log` or debug to see the content of the `profile` object that google sent to us.
+Import the `GooglePassportStrategy` as a provider in the `AuthModule`.
+
+**bloggering/src/auth/auth.module.ts**
+
+	import { Module } from  '@nestjs/common';
+	import { AuthController } from  './auth.controller';
+	import { AuthService } from  './auth.service';
+	import { GooglePassportStrategy } from  './strategies/google.passport.strategy';
+
+	@Module({
+		imports: [],
+		controllers: [AuthController],
+		providers: [AuthService, GooglePassportStrategy],
+	})
+	export  class  AuthModule { }
+
+Now to be able to test what we have done we have to create endpoints to handle the requests from the client and from the google! Remember the callback endpoint that google will call?
+Let's implement our `AuthController`
+
+**bloggering/src/auth/auth.module.ts**
+
+	import { Controller, Get, UseGuards, Res, Req } from  '@nestjs/common';
+	import { AuthGuard } from  '@nestjs/passport';
+
+	@Controller('auth')
+	export  class  AuthController {
+		@Get('google')
+		@UseGuards(AuthGuard('google'))
+		oauth2GoogleLogin() {
+			// initiates the Google OAuth2 login flow
+		}
+
+		@Get('google/callback')
+		@UseGuards(AuthGuard('google'))
+		oauth2GoogleLoginCallback(@Req() req, @Res() res) {
+			const  jwt: string = req.user.jwt;
+			if (jwt)
+				res.status(200).json({ jwtToken:  jwt });
+			else
+				res.status(400).json({ errorMessage:  'Authentication failed' });
+		}
+	}
+The first endpoint will be respondible to trigger our OAuth2 flow and start the comunication with google. Pay attention that we use the AuthGuard passing the same name we used in the on our `GoogleStrategy` class. Under the hood, passport will find our strategy and call google passing our credentials.
+The second endpoint will be our callback that google will call when the user gives his consent to the login. This because of the AuthGuard, passport will find our google passport  strategy and call the validate method. This validate method if you remember it, calls a `done(null, user)`callback. This function is responsible to populate our request with user object.
+
+Check whether your application works by going to your browser and typing http://localhost:3000/api/auth/google. If everything works correctly, you should be redirect to a google login web page and after fill the information you should be redirected again to our application with the token as response.
+
+![NestJs scaffold structure](/images/create-nestjs-app/09-oauth2-google-signin.png)
+
+Next we are going to get rid of this hardcoded token and create a real JWT token. After install nestjs jwt dependency we´ll implement the `AuthService`to create a user and generate our authorization token based on the info we received from google.  For a while our user will be temporary, but as soon as we have a real persistence in the database we are going to register a real user in the correct table.
+
+Let's create a `User`entity and implement an `AuthService`
+
+**bloggering/src/user/user.entity.ts**
+
+	export  class  User {
+		id: string;
+		thirdPartyId: string;
+		name: string;
+		email: string;
+		isActive: boolean;
+		createdAt!: Date;
+	}
+Next install our next jwt dependency
+
+	PS D:\projects\bloggering> npm i @nestjs/jwt --save
+We will need to register the `JwtModule` in our `AuthModule` to be able to inject a configured `JwtService` in our `AuthService`. Again, DO NOT LET SENSITIVE INFORMATION LIKE YOUR JWT SECRET IN YOUR CODE. We well see how to remove it later.
+
+**bloggering/src/auth/auth.module.ts**
+
+	import { Module } from  '@nestjs/common';
+	import { AuthController } from  './auth.controller';
+	import { AuthService } from  './auth.service';
+	import { GooglePassportStrategy } from  './strategies/google.passport.strategy';
+	import { JwtModule } from  '@nestjs/jwt';
+
+	@Module({
+		imports: [JwtModule.register({
+			secret:  'hard!to-guess_secret',
+			signOptions: { expiresIn:  '1200s' }
+		})],
+		controllers: [AuthController],
+		providers: [AuthService, GooglePassportStrategy],
+	})
+
+	export  class  AuthModule { }
+In our case this secret is used both to signin and to verify of the token. Because we will have only one api using this secret is easy to just store it in a environment variable, or other secret file.
+
+**bloggering/src/auth/auth.service.ts**
+
+	import { Injectable, InternalServerErrorException } from  '@nestjs/common';
+	import { User } from  'src/users/user.entity';
+	import { JwtService } from  '@nestjs/jwt';
+
+	@Injectable()
+	export  class  AuthService {
+		constructor(private  jwtService: JwtService) {
+		}
+
+		async  validateOAuthLogin(email: string, name: string, thirdPartyId: string, provider: string): Promise<string> {
+			try {
+				const  fakeuser = new  User();
+				fakeuser.id = new  Date().getTime().toString(); //fake id;
+				fakeuser.email = email;
+				fakeuser.isActive = true;
+				fakeuser.name = name;
+				fakeuser.thirdPartyId = thirdPartyId;
+
+				return this.jwtService.sign({
+					id:  fakeuser.id,
+					entity:  fakeuser,
+					provider
+				});
+			}
+			catch (err) {
+				throw  new  InternalServerErrorException('validateOAuthLogin', err.message);
+			}
+	}
+}
+
+Currently we do not have any logic yet. Instead our method just create a fake user with the real data from google and create a signed [jwt token](https://jwt.io/introduction/) that expires 1200 seconds with the data we want it to contains.
+This should be a generic service and you have to try to keep all concrete dependencies to a specific provider out of this class. Following this guideline should be easy to just implement passports for other providers and just call this same class.
+We are almost finishing our authentication feature! We are still missing a @Guard to protect endpoints by requiring a valid JWT be present on the request. **Passport** can help us here again with a [passport-jwt](https://github.com/mikenicholson/passport-jwt) strategy for securing RESTful endpoints with JSON Web Token.
+Install passport-jwt dependency.
+
+	PS C:\gems\blog-projects\bloggering> npm install passport-jwt --save
+
+Create a new strategy called `JwtStrategy` inside our `/auth/strategies` folder
+
+**bloggering/src/auth/strategies/jwt.strategy.ts**
+
+	import { ExtractJwt, Strategy } from  'passport-jwt';
+	import { PassportStrategy } from  '@nestjs/passport';
+	import { Injectable } from  '@nestjs/common';
+
+	@Injectable()
+	export  class  JwtStrategy  extends  PassportStrategy(Strategy) {
+		constructor() {
+			super({
+				jwtFromRequest:  ExtractJwt.fromAuthHeaderAsBearerToken(),
+				ignoreExpiration:  false,
+				secretOrKey:  'hard!to-guess_secret', //same as you put in the JwtModule.register on auth.module.ts.
+			});
+		}
+
+		async  validate(payload: any) {
+			return { userId:  payload.id, name:  payload.entity.name, email:  payload.entity.email };
+		}
+	}
+
+This class is responsible to extract the jwt token from the request authorization header, check if is valid, verifies JWT's signature, if is not expired. If we have some custom verifications like check claims, if the user is still active, etc we can add here. We could have a dependency for an `UserService`and load our user from the database.
+In the return of the validate method we just map our token payload to an simple object.
+This class will be used the same way as our `google.passport.strategy`, we will decorate
+
+Do not forget to add our `JwtStrategy` as a provider in the `AuthModule`.
+
+**bloggering/src/auth/auth.module.ts**
+
+	...
+	providers: [AuthService, GooglePassportStrategy, JwtStrategy],
+	...
+
+Last but not least, lets update our `posts.controller`creation method to have an AuthGuard to check if the user is authenticated or not, and change the hardcoded author to be our user instead.
+
+**bloggering/src/posts/posts.controller.ts**
+
+	...
+	import { Controller, Get, Param, Post, HttpCode, Body, UseGuards, Req } from  '@nestjs/common';
+	import { AuthGuard } from  '@nestjs/passport/dist';
+	...
+	@Post()
+	@UseGuards(AuthGuard('jwt'))
+	create(@Body() newPost: BlogPost, @Req() req) {
+		const  user = req['user'];
+		return  this.postsService.createPost(newPost.title, user.name, newPost.content)
+	}
+	...
+
+To test wether our endpoint is protected or not, lets make a call without passing a authorization header and check if it returns 401 as result.
+Now to test if everything is working, get the token you received from google and make a call to create a post passing it as an authorization header.
+
+	POST http://localhost:3000/api/posts/ HTTP/1.1
+	Content-Type: application/json
+	Authorization: Bearer <jwt_token_here>
+
+	{
+	    "title": "My First Post",
+	     "content": "Check Post"
+	}
+We should receive a http status 201 as result.
+Make another call to get this single created post and check how our user is populated.
+
+Wow! That was a lot of work! In the part II we are goingo to add TypeORM to persist our data into a real database, extract our sensitive data to an enviroment file and expose it to our application using a ConfigService, add Docker and DockerCompose to manage our services, and index our post content using elastic search.
