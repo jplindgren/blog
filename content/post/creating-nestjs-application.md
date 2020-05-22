@@ -1,6 +1,6 @@
 ---
 date: 2020-04-10T10:58:08-04:00
-description: "Creating a sample blog application with NestJS, Postgres and ElasticSearch"
+description: "Creating a simple but complete backend blog application with NestJS, Postgres and ElasticSearch"
 featured_image: "/images/nestjs-logo-small.svg"
 tags: [ "Javascript", "Nestjs", "Elasticsearch"]
 title: "Creating a NestJS application"

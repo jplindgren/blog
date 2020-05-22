@@ -7,7 +7,7 @@ MetaDataFormat = "yaml"
 DefaultContentLanguage = "en"
 SectionPagesMenu = "main"
 Paginate = 10 # this is set low for demonstrating with dummy content. Set to a higher number
-googleAnalytics = ""
+googleAnalytics = "UA-38408987-1"
 enableRobotsTXT = true
 
 [sitemap]
@@ -17,7 +17,7 @@ enableRobotsTXT = true
 
 [params]
   favicon = ""
-  description = "The last theme you'll ever need. Maybe."
+  description = "Personal tech blog of Joao Paulo Lindgren. Here you will find topics about .net, javascript, react, nestjs, frontend, backend, and more!"
   facebook = "https://www.facebook.com/joao.lindgren"
   twitter = ""
   instagram = ""
