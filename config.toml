@@ -36,4 +36,5 @@ enableRobotsTXT = true
 
 [taxonomies]
   category = "categories"
+  series = "series"
   tag = "tags"
