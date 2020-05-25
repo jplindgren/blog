@@ -5,15 +5,18 @@ featured_image: "/images/nestjs-logo-small.svg"
 series: ["Complete NestJS"]
 tags: [ "Javascript", "Nestjs", "Elasticsearch", "TypeORM"]
 title: "Creating a NestJS application (Part II)"
-weight: 70
+weight: 90
 slug: part2
 ---
+
+ONGOING PROGRESS
+
 [Part I]({{< relref "creating-nestjs-application-part1.md" >}})
 
 Part II
 - [Add Database Persistence](#add-persistence-with-typeorm)
 - [Configuration](#add-configuration-service)
-- Docker and Docker compose
+- [Docker and Docker compose](#add-docker-and-docker-compose)
 - Add a post subscriber and index content with elastic search.
 
 In part I of this series in our NestJs application we created a post entity, a post services, a couple of endpoints to manage it and finally the authentication using google OAuth. While it was a lot of work, we are far from having a sample of usable application. We are still missing a core part of most of the web applications, the data persistence. In this part we will make the persistence of our data using a library called [TypeORM](https://typeorm.io/) and the [postgres](https://www.postgresql.org/) database. Because some sensitive configuration parameters like username and password are needed by the application, the next section will be dedicated to the configuration of the application. How can we remove these hardcoded parameters from our application and how we should deal with them?
@@ -266,3 +269,231 @@ Finally! Now we can authenticate with our google login, create a post and retrie
 ![NestJs scaffold structure](/images/create-nestjs-app-part2/02-post-in-database.png)
 
 ## Add Configuration Service
+
+After speaking the whole text about take care with sensitive information hardcoded in our code it is time to get rid of them. Not only sensitive information to be honest, we'll also change configurations that can be possible changed by multiple enviroments, like hosts, secret keys, etc.
+Most of the readers already know about lots of strategies to deal with it, most of the languages encourages use enviroments variables, others uses config files, but the porpose is always the same. Keep your config data out of you code making possible to change settings according to the environment . NodeJS usually uses .env files for store settings, and NestJS follow the same approach but adds a infrastructure over the top o process.env to help with modularity and testability of the code. They call it [ConfigService](https://docs.nestjs.com/techniques/configuration#using-the-configservice) and we are going to use it to create our custom configuration files.
+
+ - Application Configuration
+ - Authentication Configuration
+ - Database configuration
+
+Clearly this is an overengineer for a small project like this. Usually you need to split things in this granularity in big projects, but as I wanted to explore the options I choose to break it. Feel free to follow the documentation example and load directly the env file into the ConfigService and inject is as Global if you think is more appropriated for your project. It is up to you define what is better in YOUR application.
+First and foremost we need to install NestJs config dependency.
+
+	PS C:\gems\blog-projects\bloggering> npm i  @nestjs/config --save
+
+Then let's create an `/config` folder under the `/src` folder. Then inside the /config folder create one folder for each of the groups we talked above, `/app`, `/auth`, `/database`
+![NestJs scaffold structure](/images/create-nestjs-app-part2/03)
+
+Now in the root of your project create a .env file to hold our configs. This file should not be versioned! Check if it is already ignored in the .gitignore file for safety.
+Inside the enviroment file we can add all of our configs.
+
+	APP_ENV=development
+	APP_NAME=Bloggering
+	APP_PORT=3000
+	APP_HOST=http://localhost
+	GOOGLE_OAUTH2_CLIENTID=<your_client_id>
+	GOOGLE_OAUTH2_CLIENT_SECRET=<your_client_secret>
+	OAUTH2_JWT_SECRET=<your_jwt_secret>
+	TYPEORM_CONNECTION=postgres
+	TYPEORM_HOST=localhost
+	TYPEORM_USERNAME=postgres
+	TYPEORM_PASSWORD=<your_postgres_password>
+	TYPEORM_DATABASE=bloggering
+	TYPEORM_PORT=5432
+	TYPEORM_LOGGING=true
+	TYPEORM_ENTITIES=dist/**/*.entity.js
+	TYPEORM_SYNCHRONIZE=true
+Of course, feel free to change them according with your enviroment. For example, my postgres is exposed in the port 5432, but your can be in another port.
+To deal with the general application configuration we are going to create a `AppConfigService`and expose it via an `AppConfigModule`
+Create three files inside `/src/config/app` folder: `configuration.ts`,  `configuration.service.ts`, and `configuration.module.ts`.
+
+**bloggering/src/config/app/configuration.ts**
+
+ ```typescript {linenos=inline}
+import { registerAs } from  '@nestjs/config';
+export  default  registerAs('app', () => ({
+	env:  process.env.APP_ENV,
+	name:  process.env.APP_NAME,
+	host:  process.env.APP_HOST,
+	port:  process.env.APP_PORT,
+}));
+```
+The `app/configuration.ts` is solely responsible to load the configurations of the env file and create a namespace for them. To do that, we call the factory `registerAs` from `@nestjs/config`.
+
+**bloggering/src/config/app/configuration.service.ts**
+
+ ```typescript {linenos=inline}
+import { Injectable } from  '@nestjs/common';
+import { ConfigService } from  '@nestjs/config';
+
+@Injectable()
+export  class  AppConfigService {
+	constructor(private  configService: ConfigService) { }
+	get  name(): string {
+		return  this.configService.get<string>('app.name');
+	}
+	get  env(): string {
+		return  this.configService.get<string>('app.env');
+	}
+	get  host(): string {
+		return  this.configService.get<string>('app.host');
+	}
+	get  port(): number {
+		return  Number(this.configService.get<number>('app.port'));
+	}
+}
+```
+
+The `AppConfigService` is our actual custom settings service. Our class is basically a wrapper on top of the ConfigService (injected via constructor) and it will be exposed via a module allowing us to do a partial registration of this settings to only specific features if we want.
+
+**bloggering/src/config/app/configuration.module.ts**
+ ```typescript {linenos=inline}
+import { Module } from  '@nestjs/common';
+import  configuration  from  './configuration';
+import { AppConfigService } from  './configuration.service';
+import { ConfigModule, ConfigService } from  '@nestjs/config';
+
+@Module({
+	imports: [
+		ConfigModule.forRoot({
+			load: [configuration],
+		}),
+	],
+	providers: [ConfigService, AppConfigService],
+	exports: [ConfigService, AppConfigService],
+})
+export  class  AppConfigModule { }
+```
+The last piece of infrastructure to the app's configuration settings is the module.
+Through it we'll be able to allow our features to import our custom `AppConfigService`.
+
+To exemplify how to use, let's remove the hardcoded port in the `main.ts` file for our port from the env file. But to be able to use it there, make sure to first import the `AppConfigModule` in our `AppModule`.
+
+**bloggering/src/app.module.ts**
+ ```typescript {linenos=inline, hl_lines=[4]}
+@Module({
+imports: [
+PostsModule, AuthModule,
+AppConfigModule, ...],
+...
+})
+ ```
+ Finally we can change our main.ts to set the port based on our settings. Due to be the entrypoint of the NestJS we cannot inject the `AppConfigService` on the bootstrap function, but we can use the the application to retrieve our custom configuration. Check the code below.
+
+**bloggering/src/main.ts**
+ ```typescript {linenos=inline, hl_lines=[4, 11, 12]}
+import { NestFactory } from  '@nestjs/core';
+import { AppModule } from  './app.module';
+import { ValidationPipe } from  '@nestjs/common';
+import { AppConfigService } from  './config/app/configuration.service';
+
+async  function  bootstrap() {
+	const  app = await  NestFactory.create(AppModule);
+	app.useGlobalPipes(new  ValidationPipe());
+	app.setGlobalPrefix('api');
+	const  appConfig: AppConfigService = app.get('AppConfigService');
+	await  app.listen(appConfig.port || 3000);
+}
+bootstrap();
+```
+If everything worked as we wish, you should be able to change `APP_PORT` settings in our `.env` file and the application should start to listen in this new port.
+
+The database configuration service needs some customization because the `OrmConfigService` needs to implements the `TypeOrmOptionsFactory` interface. We need to implement the `createTypeOrmOptions` that returns a `TypeOrmModuleOptions` to fullfill the contract that TypeORM expects. Looking at the code make it easier to understand.
+
+**bloggering/src/config/database/configuration.ts**
+ ```typescript {linenos=inline}
+import { registerAs } from  '@nestjs/config';
+const  entitiesPath = process.env.TYPEORM_ENTITIES ? `${process.env.TYPEORM_ENTITIES}` : 'dist/**/*.entity.js';
+
+export  default  registerAs('orm', () => ({
+	type:  process.env.TYPEORM_CONNECTION,
+	host:  process.env.TYPEORM_HOST || '127.0.0.1',
+	username:  process.env.TYPEORM_USERNAME,
+	password:  process.env.TYPEORM_PASSWORD,
+	database:  process.env.TYPEORM_DATABASE,
+	logging:  process.env.TYPEORM_LOGGING === 'true',
+	sincronize:  process.env.TYPEORM_SYNCHRONIZE === 'true',
+	port:  Number.parseInt(process.env.TYPEORM_PORT, 10),
+	entities: [entitiesPath],
+}));
+```
+We added some default values if no settings is provided and some especial treatments for arrays, booleans and numbers. We gave these settings the namespace of "orm".
+
+**bloggering/src/config/database/configuration.service.ts**
+```typescript {linenos=inline}
+import { Injectable } from  '@nestjs/common';
+import { ConfigService } from  '@nestjs/config';
+import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from  '@nestjs/typeorm';
+
+@Injectable()
+export  class  OrmConfigService  implements  TypeOrmOptionsFactory {
+	constructor(private  configService: ConfigService) { }
+	createTypeOrmOptions(): TypeOrmModuleOptions {
+		const  type: any = this.configService.get<string>('orm.type');
+		return {
+			type,
+			host:  this.configService.get<string>('orm.host'),
+			username:  this.configService.get<string>('orm.username'),
+			password:  this.configService.get<string>('orm.password'),
+			database:  this.configService.get<string>('orm.database'),
+			port:  this.configService.get<number>('orm.port'),
+			logging:  this.configService.get<boolean>('orm.logging'),
+			entities:  this.configService.get<string[]>('orm.entities'),
+			synchronize:  this.configService.get<boolean>('orm.sincronize'),
+		};
+	}
+}
+```
+Besides that,  there is one point that is worth to talk. How to change our hardcoded settings for the new settings in the TypeORM configuration module on `app.module.ts`.
+Currently we call the method `forRoot` of the `TypeOrmModule`:
+ ```typescript {linenos=false}
+ TypeOrmModule.forRoot({
+	type:  'postgres',
+	host:  'localhost',
+	port:  5432,
+	username:  'postgres',
+	password:  '<password>',
+	database:  'bloggering',
+	entities: [Post, User],
+	synchronize:  true,
+})
+ ```
+
+The problem is that method receives static configuration, to remediate, we need to change to call the method `forRootAsync` which we can provide a  `TypeOrmOptionsFactory` that returns a `TypeOrmModuleOptions`. That why our `OrmConfigService` needs to implement this exact interface. Now the TypeORM will know how to get the settings from our custom database config service.
+Check the `AppModule` after the changes.
+
+**bloggering/src/app_module.ts**
+ ```typescript {linenos=inline, hl_lines=["12-15"]}
+import { Module } from  '@nestjs/common';
+import { AppService } from  './app.service';
+import { PostsModule } from  './posts/posts.module';
+import { AuthModule } from  './auth/auth.module';
+import { TypeOrmModule } from  '@nestjs/typeorm';
+import { AppConfigModule } from  './config/app/configuration.module';
+import { OrmConfigModule } from  './config/database/configuration.module';
+import { OrmConfigService } from  './config/database/configuration.service';
+
+@Module({
+	imports: [PostsModule, AuthModule, AppConfigModule, OrmConfigModule,
+		TypeOrmModule.forRootAsync({
+			imports: [OrmConfigModule],
+			useClass:  OrmConfigService
+		})],
+	controllers: [],
+	providers: [AppService],
+})
+export  class  AppModule { }
+  ```
+
+From now on, I´ll speed up the velocity because for the rest of the settings, the procedures are basically the same, we are going to create a configuration, a custom config service and a module for outh settings and any other "feature" our logic block we want. You can check their content in the [bloggering project](https://github.com/jplindgren/Bloggering) repository on GitHub. Do not forget to change the places where we used this hardcoded settings to inject the corresponding config service.
+Of course, as I said in the beggining of the section, this is a worth strategy only for big projects, for small projects you can just call to load you env file automatically. You can even set it global and inject all over the places.
+```typescript
+@Module({
+  imports: [ConfigModule.forRoot()],
+})
+```
+
+Finally, just run the application and check if everything is still working fine. We are ready for the next part and docker and docker compose to our stack!
+
+## Add Docker and Docker Compose
