@@ -8,6 +8,9 @@ title: "Creating a NestJS application (Part I)"
 weight: 99
 slug: part1
 ---
+BE AWARE THAT THIS IS A WORK IN PROGRESS... I UPLOADED AS PUBLISHED TO HELP PEOPLE AND GET FEEDBACKS.
+IF YOU WANT TO HELP ME WITH FEEDBACKS, YOU CAN SEND AN EMAIL TO joaopozo@gmail.com
+
 Part I
 - [What is NestJS](#what-is-nestjs)
 - [Creating a Project](#creating-a-project)
