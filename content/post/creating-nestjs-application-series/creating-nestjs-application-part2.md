@@ -3,15 +3,14 @@ date: 2020-05-20T18:00:08-03:00
 description: "Creating a simple but complete backend blog application with NestJS, Postgres and ElasticSearch"
 featured_image: "/images/nestjs-logo-small.svg"
 series: ["Complete NestJS"]
-tags: [ "Javascript", "Nestjs", "Elasticsearch", "TypeORM"]
+tags: [ "Javascript", "Nestjs", "Elasticsearch", "TypeORM", "Docker"]
 title: "Creating a NestJS application (Part II)"
+summary: "Part II of the series 'Creating a NestJs application'. In this part we are going to add TypeORM to save our entities to the database, deal with the application settings in a more safe way, run our application and all its dependencies in containers using docker and docker-compose, and in the end, we are going to index our content to elastic search providing blazing fasts searches!"
 weight: 90
 slug: part2
 ---
 BE AWARE THAT THIS IS A WORK IN PROGRESS... I UPLOADED AS PUBLISHED TO HELP PEOPLE AND GET FEEDBACKS.
 IF YOU WANT TO HELP ME WITH FEEDBACKS, YOU CAN SEND AN EMAIL TO joaopozo@gmail.com
-
-Create Nestjs Application part 2
 
 [Part I]({{< relref "creating-nestjs-application-part1.md" >}})
 
@@ -19,7 +18,7 @@ Part II
 - [Add Database Persistence](#add-persistence-with-typeorm)
 - [Configuration](#add-configuration-service)
 - [Docker and Docker compose](#add-docker-and-docker-compose)
-- Add a post subscriber and index content with elastic search.
+- [Add a post subscriber and index content with elastic search](#add-elastic-search)
 
 In part I of this series in our NestJs application we created a post entity, a post services, a couple of endpoints to manage it and finally the authentication using google OAuth. While it was a lot of work, we are far from having a sample of usable application. We are still missing a core part of most of the web applications, the data persistence. In this part we will make the persistence of our data using a library called [TypeORM](https://typeorm.io/) and the [postgres](https://www.postgresql.org/) database. Because some sensitive configuration parameters like username and password are needed by the application, the next section will be dedicated to the configuration of the application. How can we remove these hardcoded parameters from our application and how we should deal with them?
 As a result, at this point we should have a small functional sample application. We have entities, validation, endpoints, authentication, persistence and configuration. In addition to this, in the following steps I´ll show how to [dockerize](https://docs.docker.com/get-started/) our application and add elastic search to index the posts, making it easier to search and provide suggestion about related content.
@@ -110,6 +109,7 @@ export  class  User  extends  BaseEntity {
 	version!: number;
 }
 ```
+
 **bloggering/src/posts/post.entity.ts**
 ```typescript {linenos=inline}
 import { IsNotEmpty } from  'class-validator';
@@ -221,6 +221,7 @@ Oops... An error.
 This error happened because we are setting the post with an author that is not persisted. Remember that we set in the post mapping a relation between the post and user (author). So the TypeORM expect a created User as the right association. We are going to fix it putting a logic to create a user if it does not exists in the `AuthService`. In a more sofitsticate application you will probably want to segregate this logic into a `UserService` but for us here, let's keep it simple.
 Change the `validateOAuthLogin` in the `AuthService` to be like this:
 **bloggering/src/auth/auth.service.ts**
+
 ```typescript {linenos=inline, linenostart=10, hl_lines=[3, 5, 10]}
 async  validateOAuthLogin(email: string, name: string, thirdPartyId: string, provider: string): Promise<string> {
 	try {
@@ -243,8 +244,10 @@ async  validateOAuthLogin(email: string, name: string, thirdPartyId: string, pro
 	}
 }
 ```
+
 Along with the creation of the `findByThirdPartyId` method in the `User` entity.
 **bloggering/src/users/user.entity.ts**
+
 ```typescript {linenos=inline, linenostart=31}
 static  findByThirdPartyId(thirdPartyId: string): Promise<User> {
 	return  this.createQueryBuilder("user")
@@ -383,7 +386,7 @@ AppConfigModule, ...],
  Finally we can change our main.ts to set the port based on our settings. Due to be the entrypoint of the NestJS we cannot inject the `AppConfigService` on the bootstrap function, but we can use the the application to retrieve our custom configuration. Check the code below.
 
 **bloggering/src/main.ts**
- ```typescript {linenos=inline, hl_lines=[4, 10, 11]}
+```typescript {linenos=inline, hl_lines=[4, 10, 11]}
 import { NestFactory } from  '@nestjs/core';
 import { AppModule } from  './app.module';
 import { ValidationPipe } from  '@nestjs/common';
@@ -403,7 +406,7 @@ If everything worked as we wish, you should be able to change `APP_PORT` setting
 The database configuration service needs some customization because the `OrmConfigService` needs to implements the `TypeOrmOptionsFactory` interface. We need to implement the `createTypeOrmOptions` that returns a `TypeOrmModuleOptions` to fullfill the contract that TypeORM expects. Looking at the code make it easier to understand.
 
 **bloggering/src/config/database/configuration.ts**
- ```typescript {linenos=inline, hl_lines=[2]}
+```typescript {linenos=inline, hl_lines=[2]}
 import { registerAs } from  '@nestjs/config';
 const  entitiesPath = process.env.TYPEORM_ENTITIES ? `${process.env.TYPEORM_ENTITIES}` : 'dist/**/*.entity.js';
 
@@ -465,7 +468,7 @@ The problem is that method receives static configuration, to remediate, we need 
 Check the `AppModule` after the changes.
 
 **bloggering/src/app_module.ts**
- ```typescript {linenos=inline, hl_lines=["12-15"]}
+```typescript {linenos=inline, hl_lines=["12-15"]}
 import { Module } from  '@nestjs/common';
 import { AppService } from  './app.service';
 import { PostsModule } from  './posts/posts.module';
@@ -559,6 +562,7 @@ Let's see it in practice.
 Similarly as we did before with dockerfile, now create a `docker-compose.yml` file in the root of our application.
 ![NestJs scaffold structure](/images/create-nestjs-app-part2/05-docker-compose-file-organization.png)
 
+**docker-compose.yml**
  ```yml
 version: '3.7'
 services:
@@ -616,3 +620,335 @@ All the rest is self explanatory, we set the enviroment file, the network (same 
 Now we can run the command to run docker-compose.
 
 	PS C:\gems\blog-projects\bloggering> docker-compose up
+
+Docker compose will start both our servers, in the correct order.
+
+**When you need to install new dependencies via `npm` or `yarn` you´ll have to run the follow command.**
+
+	PS C:\gems\blog-projects\bloggering> docker-compose up --build -V
+Remember when we created our `docker-compose.yml` file, we set an anonymous volume to our node_modules in our API to avoid it to be overriden. The -build flag triggers a `npm install` and the `-V` will remove this anonymous volume and recreated it.
+
+However you may notice that because our application now runs via docker-compose and we call `npm run start:dev`  we cannot debug it anymore. In order to fix that problem, let's change some pieces.
+>I´ll put here the steps to debug in **VSCODE** the IDE that I use.
+
+Change the docker-compose.yml file to `run npm run start:debug` instead also lets add the default VSCode debbuger port when using the `--inspect` flag, `9229`.
+
+**docker-compose.yml**
+ ```yml {lines_hl=[5, 8]}
+	 services:
+	 ...
+		 main:
+			 ...
+			command: npm run start:debug
+			ports:
+				- ${APP_PORT}:${APP_PORT}
+				- 9229:9229
+			...
+```
+
+In your `package.json` file change the debug inside the scripts
+
+**package.json**
+
+	"start:debug": "nest start --debug 0.0.0.0:9229 --watch",
+
+Last but no least replace our `.vscode/launch.json` with the below content.
+ ```json {lines_hl=[5, 8]}
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "node",
+			"request": "attach",
+			"name": "Debug: Bloggering",
+			"remoteRoot": "/usr/src/app",
+			"localRoot": "${workspaceFolder}",
+			"protocol": "inspector",
+			"port": 9229,
+			"restart": true,
+			"address": "0.0.0.0",
+			"skipFiles": [
+				"<node_internals>/**"
+			]
+		}
+	]
+}
+ ```
+
+After that changes, put a breakpoint in you code, `run docker-compose up` command and try to attach the debugger to see if it works.
+Hopefully everything worked fine and now we have our envinroment all set working in containers! Yeah!
+Let's move on to the next and final step of our backend project in NestJS!
+
+## Add Elastic Search
+In shortly elasticsearch is a REST HTTP service that wraps around [Apache Lucene](https://lucene.apache.org/) adding scalability and making it distributed. Lucene is powerfull Java-based indexing and search technology. Its use cases varies from indexing millions of log entries to indexing ecommerce content, blogs, streaming tweets, show related content, and many others.
+For this example, we are going to use it to index our posts (title, content, author) and provide endpoints to do quick search and get related content.
+
+Install the [NestJs Elasticsearch](https://github.com/nestjs/elasticsearch) module and the elasticsearch.
+
+	PS C:\gems\blog-projects\bloggering> npm i @elastic/elasticsearch --save
+	PS C:\gems\blog-projects\bloggering> npm i @nestjs/elasticsearch --save
+
+Because we already have our configuration pattern defined using custom configuration files, let's do the same for the elasticsearch, if you skipped this custom configuration feel free to skip this part and do whatever you did before. Create a folder called `elasticsearch` inside our `config` folder, inside the folder create our 3 basic files, `configuration.ts`, `configuration.service.ts`, `configuration.module.ts`. I won´t enter in detail because we already looked into this part on the [Configuration](#add-configuration-service) section.
+The structure should looks like:
+![NestJs scaffold structure](/images/create-nestjs-app-part2/06-elasticsearch-config-structure.png)
+
+**bloggering/src/config/configuration.module.ts**
+ ```typescript
+import { registerAs } from  '@nestjs/config';
+export  default  registerAs('es', () => ({
+	host:  process.env.ELASTIC_SEARCH_HOST || '127.0.0.1',
+	port:  process.env.ELASTIC_SEARCH_PORT || '9200',
+}));
+ ```
+
+**bloggering/src/config/configuration.service.ts**
+```typescript {linenos=inline}
+import { Injectable } from  '@nestjs/common';
+import { ConfigService } from  '@nestjs/config';
+import { ElasticsearchOptionsFactory, ElasticsearchModuleOptions } from  '@nestjs/elasticsearch';
+
+@Injectable()
+export  class  ElasticsearchConfigService  implements  ElasticsearchOptionsFactory {
+	constructor(private  configService: ConfigService) { }
+
+	createElasticsearchOptions(): ElasticsearchModuleOptions {
+		const  node = `http://${this.configService.get<string>('es.host')}:${this.configService.get<string>('es.port')}`;
+		return { node };
+	}
+}
+```
+>Likewise the TypeORM configuration, the elasticsearch module also accepts a specific interface that has a method that returns `ElasticsearchModuleOptions`.
+
+**bloggering/src/config/configuration.module.ts**
+```typescript {linenos=inline}
+import { Module } from  '@nestjs/common';
+import  configuration  from  './configuration';
+import { ElasticsearchConfigService } from  './configuration.service';
+import { ConfigModule, ConfigService } from  '@nestjs/config';
+
+@Module({
+	imports: [
+		ConfigModule.forRoot({
+			load: [configuration]
+		}),
+	],
+	providers: [ConfigService, ElasticsearchConfigService],
+	exports: [ConfigService, ElasticsearchConfigService],
+})
+export  class  ElasticsearchConfigModule { }
+```
+### Creating a subscriber
+A subscriber is an object that can be attached to the TypeORM pipeline and listen to certains events in an entity. This object should implement an interface called EntitySubscriberInterface. Common events including beforeInsert, afterInsert, beforeUpdate, afterUpdate an others can be implemented.
+Subscribers sometimes overlaps with another feature from TypeORM called `@Listeneres`, where you can decorate custom methods in the entity itself to listen for specific events as well.
+Although, it is a cool feature, seems to have some limitations, like we cannot inject dependencies into this methods, and we cannot conditionally subscribe or not like it is possible when using subscribers.
+
+| Subscribers|
+|--|--|
+| (+) Can be subscribed/or listen dynamically |
+| (+) Can inject dependencies |
+| (+) Can listen to all entities |
+| (-) More complex, need to be subscribed and registered as provider |
+
+| Listeners|
+|--|--|
+| (+) Easy to implement |
+| (+) Can use the own property of the entity, increasing cohesion |
+| (-) Can't be applied dynamically |
+| (-) Can't have injected dependencies |
+
+The documentation instructs to add subscribers to the TypeORM configuration as a [Glob](https://en.wikipedia.org/wiki/Glob_%28programming%29) pattern, but we are not going to do that. Letting TypeORM take care of it  makes it impossible for us to use dependency injection into our subscriber, that's why instead, we´ll subscribe it manually on the constructor to make NestJS take care of the injection. It is a bit hacky to me, but is the only way I found to inject dependencies right now in the subscriber. You can check discussions [here](https://github.com/nestjs/typeorm/pull/27#issuecomment-431296683) and [here](https://github.com/nestjs/typeorm/issues/112).
+
+TODO: Add DOCKER_COMPOSE CONFIG and .env CONFIG
+
+Create the `post.subrscriber.ts` file inside the `/posts` folder.
+**bloggering/src/posts/post.subscriber.ts**
+```typescript {linenos=inline, hl_lines=[8]}
+import { EventSubscriber, EntitySubscriberInterface, Connection, InsertEvent, UpdateEvent } from  "typeorm";
+import { Post } from  "./post.entity";
+import { ElasticsearchService } from  '@nestjs/elasticsearch';
+
+@EventSubscriber()
+export  class  PostSubscriber  implements  EntitySubscriberInterface<Post> {
+	constructor(private  readonly  connection: Connection, private  readonly  elasticSearchService: ElasticsearchService) {
+		connection.subscribers.push(this);
+	}
+
+	listenTo() {
+		return  Post;
+	}
+
+	async  afterInsert(event: InsertEvent<Post>) {
+		await  this.createOrUpdateIndexForPost(event.entity);
+	}
+
+	afterUpdate(event: UpdateEvent<Post>) {
+		console.log(`After Post Updated: `, event);
+	}
+
+	async  createOrUpdateIndexForPost(post: Post) {
+		const  indexName = Post.indexName();
+		try {
+			await  this.elasticSearchService.index({
+				index:  indexName,
+				id:  post.id,
+				body:  post.toIndex(),
+			});
+		} catch (error) {
+			console.log(error);
+		}
+	}
+}
+```
+It is important implement the method `ListenTo`, otherwise the subscriber will listen to all entities configured in the TypeORM configuration. The method `afterInsert`  will be fired after a `Post` insert/save and will receive the entity just inserted. Then, we call the method `createOrUpdateIndexForPost`which is the responsible to call elasticsearch and index our post information. The name of the index will be get from a post entity helper method as well as the body of the document. (documents can be would be like the rows in relational databases).
+   > Notice that our index post will be created after the first call if it does not exists.
+
+Under the hoods, all the elasticseach client do for us, is call REST endpoints of the elasticsearch server. You can call them manually for tests if you want.
+For example,  after build the elasticsearch image try to execute a curl command in the docker container to check if elasticsearch is running.
+
+    docker exec -it es01 curl http://localhost:9200
+
+So far so good,  now add the helpers methods to the `Post` entity. In the end of the file add the methods `indexName()` and `toIndex()`.
+**bloggering/src/posts/post.entity.ts**
+```typescript {linenos=inline}
+static  indexName() {
+	return  Post.name.toLowerCase();
+}
+
+toIndex() {
+	return {
+	id:  this.id,
+	author:  this.author.name,
+	title:  this.title,
+	content:  this.content
+}
+```
+
+In our `PostModule` add the elasticsearch configuration and the PostSubscriber as a provider.
+**bloggering/src/posts/post.entity.ts**
+```typescript {linenos=inline, hl_lines=[11,"12-15" ]}
+import { Module } from  '@nestjs/common';
+import { PostsController } from  './posts.controller';
+import { PostsService } from  './posts.service';
+import { ElasticsearchModule } from  '@nestjs/elasticsearch';
+import { ElasticsearchConfigService } from  'src/config/elasticsearch/configuration.service';
+import { ElasticsearchConfigModule } from  'src/config/elasticsearch/configuration.module';
+import { PostSubscriber } from  './posts.subscriber';
+
+@Module({
+	controllers: [PostsController],
+	providers: [PostsService, PostSubscriber],
+	imports: [ElasticsearchModule.registerAsync({
+		imports: [ElasticsearchConfigModule],
+		useClass:  ElasticsearchConfigService
+	})]
+})
+export  class  PostsModule { }
+```
+
+From now on, the index part should be working. Try to run the docker-compose to check if it works. In case some problem happen, try to look at NestJs log and debug the application if needed. Double check the docker-compose.yml configuration and enviroment file. Make sure you are not using localhost or the wrong port.
+Call elasticsearch mannualy to check if it is working.
+
+	    docker exec -it es01 curl http://localhost:9200
+
+In case everything worked fine, you can execute the commands above to check the result:
+
+	    docker exec -it es01 curl http://localhost:9200/post/
+	    docker exec -it es01 curl http://localhost:9200/post/_search
+The first one should return to us the schema of our document post, and the second the result of a search.
+
+By the way, the search will be the last piece of code we are going to implement. The Bloggering application will have one endpoint to ultra fast search by keywords and other to get related content.
+
+Create a method search in the `PostsService` class.
+**bloggering/src/posts/post.service.ts**
+```typescript {linenos=inline, hl_lines=[8, 10, 12, "17-18" ]}
+import { Injectable, ForbiddenException } from  '@nestjs/common';
+import { Post } from  './post.entity';
+import { User } from  'src/users/user.entity';
+import { ElasticsearchService } from  '@nestjs/elasticsearch';
+
+@Injectable()
+export  class  PostsService {
+	constructor(private  readonly  elasticSearchService: ElasticsearchService) { }
+
+	async  search(options: any): Promise<Post> {
+		const { body } = await  this.elasticSearchService.search({
+			index:  Post.indexName(),
+			body: {
+				query: {
+				// eslint-disable-next-line @typescript-eslint/camelcase
+					multi_match: {
+						query:  options.query,
+						fields: ['title^2', 'content', 'author'],
+					}
+				}
+			}
+		});
+		return  body.hits;
+	}
+
+	async  createPost(title: string, author: User, content: string): Promise<any> {
+		if (!author.isActive)
+			throw  new  ForbiddenException("Cannot create a post because the user is inactive");
+		const  insertedPost = await  Post.save(new  Post(author, title, content));
+		return  insertedPost.id
+	}
+	getPosts = async (): Promise<Post[]> =>  await  Post.find();
+	getSinglePost = async (id: string): Promise<Post> =>  await  Post.findOneOrFail(id);
+}
+```
+Our new `search` method receives an argument `options` that contains a property called `query` with the **keyword** searched by the client. Then, calls `elasticSearchService.search` passing as arguments, the name of the index, and an object containing the expression searched by the user (**options.query**) and the an array of fields where we´ll make the search. Notice that we can use the expression `^` to increase the rate of a specific field. In my case, title has its weighte increase so will have a bigger impact in the query.
+Diferent from others databases, elasticsearch have the possibility of instead have a binary return (found, not found), return a score for the results, the higher the score, the more likely to be a relevant result.
+
+Time to expose our `search` via an endpoint in our application. After that, our clients will be able to query for posts in a quick way!
+Just add a search method with a specific route in the `post.controller.ts`
+**bloggering/src/posts/post.controller.ts**
+```typescript {linenos=inline}
+import { Post  as  BlogPost } from  './post.entity';
+import { PostsService } from  './posts.service';
+import { Controller, Get, Param, Post, Body, UseGuards, Req, Query } from  '@nestjs/common';
+import { AuthGuard } from  '@nestjs/passport/dist';
+
+@Controller('posts')
+export  class  PostsController {
+	constructor(private  readonly  postsService: PostsService) { }
+
+	@Get()
+	async  findAll(): Promise<BlogPost[]> {
+		return  await  this.postsService.getPosts();
+	}
+
+	@Get('search')
+	async  search(@Query('q') content): Promise<BlogPost> {
+		return  this.postsService.search({ query:  content });
+	}
+
+	@Get(':id')
+	async  find(@Param('id') postId: string): Promise<BlogPost> {
+		return  await  this.postsService.getSinglePost(postId);
+	}
+
+	@Post()
+	@UseGuards(AuthGuard('jwt'))
+	async  create(@Body() newPost: BlogPost, @Req() req) {
+		const  user = req['user'];
+		const  newPostId = await  this.postsService.createPost(newPost.title, user, newPost.content);
+		return { id:  newPostId };
+	}
+}
+```
+
+
+TODO: More detailed query
+As regards the related content... TODO
+
+
+
+
+
+
+## References:
+
+[https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-docker.html](https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-docker.html)
+
+[https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs.html)
+[https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/api-reference.html](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/api-reference.html)

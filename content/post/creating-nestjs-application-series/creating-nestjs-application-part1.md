@@ -2,9 +2,10 @@
 date: 2020-04-10T10:58:08-03:00
 description: "Creating a simple but complete backend blog application with NestJS, Postgres and ElasticSearch"
 featured_image: "/images/nestjs-logo-small.svg"
-tags: [ "Javascript", "Nestjs", "Elasticsearch"]
+tags: [ "Javascript", "Nestjs", "OAuth"]
 series: ["Complete NestJS"]
 title: "Creating a NestJS application (Part I)"
+summary: "Part I of the series 'Creating a NestJs application'. In this part we are going to have an overview of NestJs, scaffold the basic structure of our application, add a basic controller, use a service and implement authentication using Google OAuth."
 weight: 99
 slug: part1
 ---
@@ -21,8 +22,8 @@ Part I
 [Part II]({{< relref "creating-nestjs-application-part2.md" >}})
 - [Add Database Persistence]({{< relref "creating-nestjs-application-part2.md#add-persistence-with-typeorm" >}})
 - [Configuration]({{< relref "creating-nestjs-application-part2.md#add-configuration-service" >}})
-- Add a post subscriber and index content with elastic search.
-- Docker and Docker compose
+- [Docker and Docker compose]({{< relref "creating-nestjs-application-part2.md#add-docker-and-docker-compose" >}})
+- [Add a post subscriber and index content with elastic search]({{< relref "creating-nestjs-application-part2.md#add-elastic-search" >}})
 
 During this pandemic with the free time, I and some friends wanted to do a side project to improve our skills and know new technologies and frameworks. I´ll not focus on what would be this project, but after a few talks we decided to do it, using react native and NodeJs in the backend.
 It turns out that we did not take this side project out of paper for several reasons, conciliate schedules, different objectives, and lack of agreement as to the direction in which the project should go, among other things. During our discussions one of my friends presented this framework called NestJS as an option to use in the backend. Although we halt the project, I decided to give it a shot to this framework, and started a little web application on my own just to learn it.
