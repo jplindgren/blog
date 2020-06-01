@@ -17,7 +17,8 @@ enableRobotsTXT = true
 
 [params]
   favicon = ""
-  description = "Personal tech blog of Joao Paulo Lindgren. Here you will find topics about .net, javascript, react, nestjs, frontend, backend, and more!"
+  description = "Blog dedicated to the discussion of technologies and different programming languages. Why sharing knowledge is the best way to learn. Here you will find topics about .net, javascript, react, nestjs, design patterns, docker, frontend, backend, and much more!"
+  author = "Joao Paulo Lindgren"
   facebook = "https://www.facebook.com/joao.lindgren"
   twitter = "https://twitter.com/joaopozo"
   instagram = ""
@@ -31,6 +32,7 @@ enableRobotsTXT = true
   # choose a background color from any on this page: http://tachyons.io/docs/themes/skins/ and preface it with "bg-"
   background_color_class = "bg-black"
   featured_image = "/images/Neurons-in-the-brain.jpg"
+  og_image = "/images/og_image-min.jpg"
   recent_posts_number = 5
   custom_css = ["css/custom-style.css"]
 

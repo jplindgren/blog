@@ -14,8 +14,9 @@
   {{ else }}
   <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
   {{ end }}
-  <meta name="description"
-    content="{{ if .Params.Description }}{{ .Params.Description }}{{ else if .Site.Params.Description }}{{ .Site.Params.Description }}{{ else }}Jp Lindgren Blog Tech{{ end }}" />
+  <meta name="description" content="{{ if .Params.Description }}{{ .Params.Description }}{{ else if .Site.Params.Description }}{{ .Site.Params.Description }}{{ else }}Jp Lindgren Blog Tech{{ end }}" />
+  <meta name="author" content="{{ if .Params.Author }}{{ .Params.Author }}{{ else if .Site.Params.Author }}{{ .Site.Params.Author }}{{ else }}Jp Lindgren{{ end }}" />
+  <meta property="og:image" content="{{ if .Params.og_image }}{{ .Site.BaseURL }}{{ .Params.og_image }}{{ else }}{{ .Site.BaseURL }}{{ .Site.Params.og_image }}{{ end }}" />
 
   {{ $stylesheet := .Site.Data.webpack_assets.app }}
   {{ with $stylesheet.css }}
