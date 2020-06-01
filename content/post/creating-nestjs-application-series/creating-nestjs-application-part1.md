@@ -1,5 +1,5 @@
 ---
-date: 2020-04-10T10:58:08-03:00
+date: 2020-04-11T10:58:08-03:00
 description: "Creating a simple but complete backend blog application with NestJS, Postgres and ElasticSearch"
 featured_image: "/images/nestjs-logo-small.svg"
 tags: [ "Javascript", "Nestjs", "OAuth"]
@@ -9,7 +9,6 @@ summary: "Part I of the series 'Creating a NestJs application'. In this part we 
 weight: 99
 slug: part1
 ---
-
 Part I
 - [What is NestJS](#what-is-nestjs)
 - [Creating a Project](#creating-a-project)
@@ -138,7 +137,7 @@ In the next section we are going to create a post service and start to deal with
 
 ## Add services
 
-Currently, we have our controllers just creating hardcoded data to return from its endpoints. Now we are going to create a `PostsService` to save/retrieve dynamically created post entities. Even so, they will not be saved in the database yet, instead, we´ll save them in memory for a while.
+Currently, we have our controllers just creating hardcoded data to return from its endpoints. Now we are going to create a `PostsService` to save/retrieve dynamically created post entities. Even so, they will not be saved in the database yet, we´ll save them in memory for a while.
 After creating this service, we will need to include it as a provider in the `PostsModule`, this will tell NestJS injector the scope of this dependency and help it control its instantiation and encapsulation to other parts of the system. Then we can inject the service into the `PostsController` and use it to retrieve and create our posts.
 To automatically update the `PostsModule` dependencies, use the CLI to generate our service. Just like before the command pattern is the same, we just have to change the schematics name to service.
 
@@ -567,4 +566,4 @@ Make another call to get this single created post and check how our user is popu
 
 Wow! That was a lot of work! In part II we are going to add TypeORM to persist our data into a real database, extract our sensitive data to an environment file and expose it to our application using a ConfigService, add Docker, and DockerCompose to manage our services, and index our post content using elastic search.
 
-Any suggestions/feedback contact me on [@joaopozo](https://twitter.com/joaopozo) ;)
+Any suggestions/feedback contact me on [@joaopozo](https://twitter.com/joaopozo) or via email <joaopozo@gmail.com> ;)
