@@ -2,6 +2,8 @@ title = "Jp Lindgren Tech blog"
 baseURL = "https://jplindgren.com"
 languageCode = "en-us"
 theme = "ananke"
+RelativeURLs = true
+CanonifyURLs = true
 
 MetaDataFormat = "yaml"
 DefaultContentLanguage = "en"
