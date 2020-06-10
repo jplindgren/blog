@@ -9,3 +9,15 @@ HUGO_ENABLEGITINFO = "true"
 
 [context.deploy-preview]
 command = "hugo -b $DEPLOY_PRIME_URL"
+
+[[redirects]]
+  from = "https://jplindgren.netlify.app"
+  to = "https://www.jplindgren.com"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.jplindgren.com/post/creating-nestjs-application/"
+  to = "https://jplindgren.com/post/creating-nestjs-application-series/part1/"
+  status = 301
+  force = true
