@@ -8,17 +8,16 @@ series: ["Complete NestJS"]
 title: "Creating a NestJS application (Part I)"
 summary: "Part I of the series 'Creating a NestJs application'. In this part we are going to have an overview of NestJs, scaffold the basic structure of our application, add a basic controller, use a service and implement authentication using Google OAuth."
 author: Joao Paulo Lindgren
-weight: 99
 slug: part1
 ---
 
 Part I
 
 - [What is NestJS](#what-is-nestjs)
-- [Creating a Project](#creating-a-project)
-- [Adding Controllers](#add-controllers)
-- [Adding Services and Validations](#add-services)
-- [Adding Authentication](#add-google-auth)
+- [Creating the project](#creating-the-project)
+- [Add controllers](#add-controllers)
+- [Add services](#add-services)
+- [Add Google Auth](#add-google-auth)
 
 [Part II]({{< relref "creating-nestjs-application-part2.md" >}})
 
