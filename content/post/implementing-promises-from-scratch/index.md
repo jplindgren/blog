@@ -520,8 +520,23 @@ That's it, our promise is basically completed. In the next section as a bonus, w
 As an overview, promises are just proxy objects that work with callbacks to let you chain future values.
 
 If you are wondering what is the difference to Async/Await, it is basically nothing. Async/Await is just a syntax sugar over the promises to let you write async code in a synchronous way.
+In fact, the async function return a promise. Almost every case you can use a case, you can change for async/await, except in the cases of running then in parallel where is usual to use `promise.all` and `promise.race` like we are going to see above.
 
-#TODO elaborate with async/await x promises
+Promises
+
+```javascript {linenos=inline}
+return asyncFunction()
+  .then((result) => f1(result))
+  .then((result2) => f2(result2));
+```
+
+async/await
+
+```javascript {linenos=inline}
+const result = await asyncFunction();
+const result2 = await f1(result);
+return await f2(result2);
+```
 
 ## [Bonus] Implementing all and race methods
 
